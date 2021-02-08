@@ -4,8 +4,6 @@ import os
 import sys
 
 
-# just for test
-
 def load_image(name, colorkey=None):
     fullname = os.path.join(name)
     if not os.path.isfile(fullname):
