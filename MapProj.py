@@ -3,7 +3,8 @@ import pygame
 import os
 import sys
 
-#just for test
+
+# just for test
 
 def load_image(name, colorkey=None):
     fullname = os.path.join(name)
@@ -21,22 +22,24 @@ def load_image(name, colorkey=None):
     return image
 
 
-with open('newfile.jpg', 'wb') as target:
+with open('newfile.png', 'wb') as target:
     cords = input('Введите координаты через пробел: ').split()
     zoom = int(input('Введите масштаб (0 - 17): '))
-    a = requests.get(f'https://static-maps.yandex.ru/1.x/?ll={cords[0]},{cords[1]}&l=sat&z={zoom}&z=4&size=600,600')
+    a = requests.get(f'https://static-maps.yandex.ru/1.x/?ll={cords[0]},{cords[1]}&l=sat&z={zoom}&size=600,400')
     target.write(a.content)
     target.close()
 
 pygame.init()
 pygame.display.set_caption('Map')
-size = width, height = 600, 600
+size = width, height = 600, 400
 screen = pygame.display.set_mode(size)
 
 flag = True
-img = load_image("newfile.jpg")
+img = load_image("newfile.png")
 screen.blit(img, (0, 0))
 pygame.display.update()
+fps = 1
+clock = pygame.time.Clock()
 while flag:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
