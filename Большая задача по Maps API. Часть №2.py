@@ -53,7 +53,7 @@ while flag:
             if zoom < 0:
                 zoom = 0
     with open('newfile.png', 'wb') as target:
-        a = requests.get(f'https://static-maps.yandex.ru/1.x/?ll={cords[0]},{cords[1]}&l=sat&z={zoom}&z=4&size=600,600')
+        a = requests.get(f'https://static-maps.yandex.ru/1.x/?ll={cords[0]},{cords[1]}&l=sat&z={zoom}&size=600,600')
         target.write(a.content)
         target.close()
     img = load_image("newfile.png")
