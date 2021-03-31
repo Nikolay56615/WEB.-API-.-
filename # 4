@@ -1,0 +1,126 @@
+import os
+import sys
+
+import requests
+
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtWidgets
+
+
+class Example(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        self.set_map = True
+        self.set_sat = False
+        self.set_gibrid = False
+
+    def initUI(self):
+        self.d = input('Долгота: ')
+        self.s = input('Широта: ')
+        self.m = input('Масштаб(от 0 до 17): ')
+
+        self.set_map = True
+        self.set_sat = False
+        self.set_gibrid = False
+
+        self.getImage()
+
+        self.setGeometry(300, 300, 600, 450)
+        self.setWindowTitle('Большая задача по Maps API. Часть №1')
+
+        self.pixmap = QPixmap(self.map_file)
+        self.image = QLabel(self)
+        self.image.move(0, 0)
+        self.image.resize(450, 450)
+        self.image.setPixmap(self.pixmap)
+
+        self.btn = QPushButton('MAP', self)
+        self.btn.move(460, 30)
+        self.btn.clicked.connect(self.map)
+
+        self.btn = QPushButton('SAT', self)
+        self.btn.move(460, 60)
+        self.btn.clicked.connect(self.sat)
+
+        self.btn = QPushButton('HYBRID', self)
+        self.btn.move(460, 90)
+        self.btn.clicked.connect(self.gibrid)
+
+    def map(self):
+        self.set_map = True
+        self.set_sat = False
+        self.set_gibrid = False
+        self.getImage()
+
+    def sat(self):
+        self.set_sat = True
+        self.set_map = False
+        self.set_gibrid = False
+        self.getImage()
+
+    def gibrid(self):
+        self.set_map = False
+        self.set_sat = False
+        self.set_gibrid = True
+        self.getImage()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_PageUp:
+            if int(self.m) < 17:
+                self.m = str(int(self.m) + 1)
+        if event.key() == Qt.Key_PageDown:
+            if int(self.m) > 0:
+                self.m = str(int(self.m) - 1)
+
+        if event.key() == Qt.Key_Up:
+            if int(self.d) < 180:
+                self.d = str(int(self.d) + 1)
+        if event.key() == Qt.Key_Down:
+            if int(self.d) > 0:
+                self.d = str(int(self.d) - 1)
+
+        if event.key() == Qt.Key_Right:
+            if int(self.s) < 90:
+                self.s = str(int(self.s) + 1)
+        if event.key() == Qt.Key_Left:
+            if int(self.s) > 0:
+                self.s = str(int(self.s) - 1)
+        self.getImage()
+
+    def getImage(self):
+        print(self.d, self.s, self.m)
+        if self.set_map:
+            map = "http://static-maps.yandex.ru/1.x/?ll=" + self.d + "," + self.s + "&spn=" + self.m + "," + self.m + "&size=450,450&l=map"
+        if self.set_sat:
+            map = "http://static-maps.yandex.ru/1.x/?ll=" + self.d + "," + self.s + "&spn=" + self.m + "," + self.m + "&size=450,450&l=sat"
+        if self.set_gibrid:
+            map = "http://static-maps.yandex.ru/1.x/?ll=" + self.d + "," + self.s + "&spn=" + self.m + "," + self.m + "&size=450,450&l=skl"
+        response = requests.get(map)
+        if not response:
+            print("Ошибка выполнения запроса:")
+            print(map)
+            print("Http статус:", response.status_code, "(", response.reason, ")")
+            sys.exit(1)
+
+        self.map_file = "tmn.png"
+        with open(self.map_file, "wb") as file:
+            file.write(response.content)
+
+        self.pixmap = QPixmap(self.map_file)
+        self.image = QLabel(self)
+        self.image.clear()
+        self.image.setPixmap(self.pixmap)
+
+    def closeEvent(self, event):
+        """При закрытии формы подчищаем за собой"""
+        os.remove(self.map_file)
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = Example()
+    ex.show()
+    sys.exit(app.exec())
