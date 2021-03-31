@@ -1,0 +1,71 @@
+import os
+import sys
+
+import requests
+
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtWidgets
+
+
+class Example(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.d = input('Долгота: ')
+        self.s = input('Широта: ')
+        self.m = input('Масштаб(от 0 до 17): ')
+
+        self.getImage()
+
+        self.setGeometry(300, 300, 450, 450)
+        self.setWindowTitle('Большая задача по Maps API. Часть №1')
+
+        self.pixmap = QPixmap(self.map_file)
+        self.image = QLabel(self)
+        self.image.move(0, 0)
+        self.image.resize(450, 450)
+        self.image.setPixmap(self.pixmap)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_PageUp:
+            if int(self.m) <= 16.9:
+                self.m = str(int(self.m) + 1)
+        if event.key() == Qt.Key_PageDown:
+            if int(self.m) >= 0.1:
+                self.m = str(int(self.m) - 1)
+
+        self.getImage()
+
+    def getImage(self):
+        print(self.d, self.s, self.m)
+        map = "http://static-maps.yandex.ru/1.x/?ll=" + self.d + "," + self.s + "&spn=" + self.m + "," + self.m + "&l=map"
+        response = requests.get(map)
+        if not response:
+            print("Ошибка выполнения запроса:")
+            print(map)
+            print("Http статус:", response.status_code, "(", response.reason, ")")
+            sys.exit(1)
+
+        self.map_file = "tmn.png"
+        with open(self.map_file, "wb") as file:
+            file.write(response.content)
+
+        self.pixmap = QPixmap(self.map_file)
+        self.image = QLabel(self)
+        self.image.clear()
+        self.image.setPixmap(self.pixmap)
+
+    def closeEvent(self, event):
+        """При закрытии формы подчищаем за собой"""
+        os.remove(self.map_file)
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = Example()
+    ex.show()
+    sys.exit(app.exec())
